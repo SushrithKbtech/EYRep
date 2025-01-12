@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQ - Emergency Response System</title>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+            overflow: hidden;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            width: 90%;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-left {
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -2px;
+            text-shadow: 0 2px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .typewriter-container {
+            margin: 4rem 0;
+            margin-top: 5rem;
+            min-height: 120px;
+        }
+
+        .typewriter {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.2rem 2.5rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            color: white;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover::before {
+            transform: translateX(0);
+        }
+
+        .doctor-btn {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            box-shadow: 0 4px 15px rgba(0, 176, 155, 0.3);
+        }
+
+        .doctor-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 176, 155, 0.4);
+        }
+
+        .patient-btn {
+            background: linear-gradient(135deg, #7F00FF, #E100FF);
+            box-shadow: 0 4px 15px rgba(127, 0, 255, 0.3);
+        }
+
+        .patient-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(127, 0, 255, 0.4);
+        }
+
+        .btn i {
+            font-size: 1.3rem;
+            margin-right: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+            .buttons {
+                flex-direction: column;
+                gap: 1rem;
+                bottom: 50px;
+            }
+
+            .btn {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+        }
+
+        .try-first {
+            margin-top: 2rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .try-first:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #ffffff;
+            margin-left: 5px;
+            border-radius: 50%;
+            animation: blink 0.7s infinite;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="particles-js"></div>
+    <div class="container">
+        <div class="content-left">
+            <h1 class="brand"><span>+</span>RESQ</h1>
+            <div class="typewriter-container">
+                <div class="typewriter" id="typewriter-text"></div>
+                <span class="cursor" id="cursor"></span>
+            </div>
+            <a href="/demo" class="try-first">Try the demo version →</a>
+        </div>
+    </div>
+    <div class="buttons">
+        <a href="Dashboard.html" class="btn doctor-btn">
+            <i class='bx bx-plus-medical'></i>
+            <span>Join as Doctor</span>
+        </a>
+        <a href="P_Dashboard.html" class="btn patient-btn">
+            <i class='bx bx-user'></i>
+            <span>Join as Patient</span>
+        </a>
+    </div>
+
+    <script>
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 80,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: '#ffffff'
+                },
+                shape: {
+                    type: 'circle'
+                },
+                opacity: {
+                    value: 0.5,
+                    random: false,
+                    anim: {
+                        enable: false
+                    }
+                },
+                size: {
+                    value: 3,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#6366f1',
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: false,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 1
+                        }
+                    },
+                    push: {
+                        particles_nb: 4
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
+        const benefits = [
+            "Streamlined Doctor's Dashboard",
+            "Easy Data Access with QR Code",
+            "Unified Patient Database"
+        ];
+        const typewriterElement = document.getElementById("typewriter-text");
+        const cursorElement = document.getElementById("cursor");
+        let index = 0;
+        let benefitIndex = 0;
+
+        function typeText() {
+            typewriterElement.textContent = '';
+            index = 0;
+            const typingInterval = setInterval(() => {
+                if (index < benefits[benefitIndex].length) {
+                    typewriterElement.textContent += benefits[benefitIndex].charAt(index);
+                    index++;
+                } else {
+                    clearInterval(typingInterval);
+                    setTimeout(() => {
+                        typewriterElement.textContent = '';
+                        cursorElement.style.backgroundColor = '#ffffff';
+                        setTimeout(() => {
+                            cursorElement.style.backgroundColor = '#8b5cf6';
+                            benefitIndex = (benefitIndex + 1) % benefits.length;
+                            setTimeout(typeText, 1000);
+                        }, 1000);
+                    }, 1000);
+                }
+            }, 100);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            typeText();
+        });
+    </script>
+</body>
+
+</html>

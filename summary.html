@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Summary</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles1.css">
+</head>
+<body>
+    <nav>
+        <label class="logo">ResQ</label>
+        <ul>
+            <li><a class="active" href="#">Home</a></li>
+            <li><a href="#">Find Doctors</a></li>
+            <li><a href="Start.html">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Patient Summary</h1>
+        <div id="summaryContainer">Loading summary...</div>
+
+        <div class="charts">
+            <div class="bmi-chart">
+                <h2>BMI Trend</h2>
+                <canvas id="bmiChart"></canvas>
+            </div>
+            <div class="blood-sugar-chart">
+                <h2>Blood Sugar Level Trend</h2>
+                <canvas id="bloodSugarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const phoneNumber = urlParams.get('phoneNumber'); // Extract phoneNumber from the URL query
+
+        const bmiChartCtx = document.getElementById('bmiChart').getContext('2d');
+        const bloodSugarChartCtx = document.getElementById('bloodSugarChart').getContext('2d');
+
+        // Fetch and render patient data
+        async function fetchPatientData(phoneNumber) {
+            try {
+                // Fetch patient summary
+                const summaryResponse = await fetch(`http://localhost:3000/summarize-patient/${phoneNumber}`);
+                const summaryData = await summaryResponse.json();
+
+                const summaryContainer = document.getElementById('summaryContainer');
+                if (summaryResponse.ok) {
+                    summaryContainer.textContent = summaryData.summary;
+                } else {
+                    summaryContainer.textContent = 'Failed to fetch summary.';
+                }
+
+                // Fetch diagnoses for charts
+                const recordsResponse = await fetch(`http://localhost:3000/get-diagnoses/${phoneNumber}`);
+                const recordsData = await recordsResponse.json();
+
+                if (recordsResponse.ok) {
+                    const labels = recordsData.map(record => new Date(record.created_at).toLocaleString());
+                    const bmiData = recordsData.map(record => record.bmi);
+                    const bloodSugarData = recordsData.map(record => record.blood_sugar);
+
+                    // Render BMI chart
+                    new Chart(bmiChartCtx, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [
+                                {
+                                    label: 'BMI',
+                                    data: bmiData,
+                                    borderColor: '#0082ef',
+                                    backgroundColor: 'rgba(0, 130, 239, 0.2)',
+                                    fill: true,
+                                    tension: 0.4,
+                                },
+                            ],
+                        },
+                        options: { responsive: true },
+                    });
+
+                    // Render Blood Sugar chart
+                    new Chart(bloodSugarChartCtx, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [
+                                {
+                                    label: 'Blood Sugar Level (mg/dL)',
+                                    data: bloodSugarData,
+                                    borderColor: '#FF5733',
+                                    backgroundColor: 'rgba(255, 87, 51, 0.2)',
+                                    fill: true,
+                                    tension: 0.4,
+                                },
+                            ],
+                        },
+                        options: { responsive: true },
+                    });
+                } else {
+                    console.error('Failed to fetch diagnoses data.');
+                }
+            } catch (error) {
+                console.error('Error fetching patient data:', error);
+                document.getElementById('summaryContainer').textContent = 'An error occurred while fetching the data.';
+            }
+        }
+
+        // Fetch data on page load
+        if (phoneNumber) {
+            fetchPatientData(phoneNumber);
+        } else {
+            document.getElementById('summaryContainer').textContent = 'No phone number provided.';
+        }
+    </script>
+</body>
+</html>

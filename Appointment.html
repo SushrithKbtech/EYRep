@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESQ - Appointments</title>
+    <link rel="stylesheet" href="Dashboard.css">
+    <link rel="stylesheet" href="Appointment.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css' rel='stylesheet' />
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js'></script>
+    <style>
+        /* Calendar Styles */
+        .calendar-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 2rem;
+        }
+
+        .calendar-wrapper {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        #calendar {
+            height: 650px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .fc-view-container {
+            background: #ffffff;
+            border-radius: 8px;
+        }
+
+        .fc-day-header {
+            background: #4299e1 !important;
+            color: white !important;
+            padding: 12px 0 !important;
+            font-weight: 500 !important;
+        }
+
+        .fc-day {
+            transition: all 0.3s ease;
+        }
+
+        .fc-day:hover {
+            background: rgba(66, 153, 225, 0.1) !important;
+        }
+
+        .fc-today {
+            background: rgba(66, 153, 225, 0.15) !important;
+        }
+
+        .fc-event {
+            border: none !important;
+            padding: 3px 5px !important;
+            margin: 2px !important;
+            border-radius: 4px !important;
+            font-size: 0.85em !important;
+            cursor: pointer !important;
+            transition: transform 0.2s ease !important;
+        }
+
+        .fc-event:hover {
+            transform: translateY(-1px) !important;
+        }
+
+        .online-appointment {
+            background: #4299e1 !important;
+            border-left: 4px solid #2b6cb0 !important;
+        }
+
+        .offline-appointment {
+            background: #1a365d !important;
+            border-left: 4px solid #0f172a !important;
+        }
+
+        /* Appointment Details Panel */
+        .appointment-details {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Add New Appointment Button Styles */
+        .add-appointment-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .add-appointment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(66, 153, 225, 0.4);
+            background: #3182ce;
+        }
+
+        .add-appointment-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .form-actions button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-modal {
+            background: #edf2f7;
+            color: #4a5568;
+            border: none;
+        }
+
+        .save-appointment {
+            background: #4299e1;
+            color: white;
+            border: none;
+        }
+
+        .cancel-modal:hover {
+            background: #e2e8f0;
+        }
+
+        .save-appointment:hover {
+            background: #3182ce;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <a href="Dashboard.html" class="logo">
+                <i class='bx bx-plus-medical'></i> RESQ
+            </a>
+            <ul>
+                <li><a href="Dashboard.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                <li><a href="Patient_Record.Html"><i class='bx bx-user'></i> Patients</a></li>
+                <li><a href="Appointment.html" class="active"><i class='bx bx-calendar'></i> Appointments</a></li>
+                <li><a href="Doctor_side.html"><i class='bx bx-qr'></i> QR Check</a></li>
+                <li><a class="sign-in" href="#"><i class='bx bx-log-out'></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>Appointment Management</h1>
+        <p>Schedule and manage your patient appointments</p>
+    </header>
+
+    <!-- Main Content -->
+    <div class="appointment-container">
+        <!-- Appointment Types -->
+        <div class="appointment-types">
+            <button class="type-btn active" data-type="all">
+                <i class='bx bx-calendar-check'></i>
+                All Appointments
+            </button>
+            <button class="type-btn" data-type="online">
+                <i class='bx bx-video'></i>
+                Online Consultations
+            </button>
+            <button class="type-btn" data-type="offline">
+                <i class='bx bx-hospital'></i>
+                In-Person Visits
+            </button>
+        </div>
+
+        <!-- Calendar and Details Section -->
+        <div class="calendar-container">
+            <!-- Calendar -->
+            <div class="calendar-wrapper">
+                <div id="calendar"></div>
+            </div>
+
+            <!-- Appointment Details -->
+            <div class="appointment-details">
+                <h3><i class='bx bx-info-circle'></i> Appointment Details</h3>
+                <div class="details-content">
+                    <div class="no-appointment-selected">
+                        Select an appointment from the calendar to view details
+                    </div>
+                    <div class="appointment-info" style="display: none;">
+                        <div class="patient-info">
+                            <img src="https://via.placeholder.com/50" alt="Patient" class="patient-avatar">
+                            <div>
+                                <h4 class="patient-name">Patient Name</h4>
+                                <p class="appointment-type">Appointment Type</p>
+                                <p class="doctor-name">Doctor Name</p>
+                                <p class="patient-email">Patient Email</p>
+                                <p class="patient-contact">Patient Contact</p>
+                            </div>
+                        </div>
+                        <div class="appointment-time">
+                            <i class='bx bx-time'></i>
+                            <span>Time: </span>
+                            <span class="time-value">10:00 AM - 10:30 AM</span>
+                        </div>
+                        <div class="appointment-date">
+                            <i class='bx bx-calendar'></i>
+                            <span>Date: </span>
+                            <span class="date-value">January 6, 2025</span>
+                        </div>
+                        <div class="appointment-reason">
+                            <i class='bx bx-notepad'></i>
+                            <span>Reason: </span>
+                            <span class="reason-value">General Checkup</span>
+                        </div>
+                        <div class="video-call-section" style="display: none;">
+                            <h4><i class='bx bx-video'></i> Video Call Details</h4>
+                            <input type="text" id="video-link" placeholder="Enter video call link">
+                            <button class="save-link-btn">Save Link</button>
+                            <button class="join-call-btn">Join Call</button>
+                        </div>
+                        <div class="appointment-actions">
+                            <button class="edit-btn"><i class='bx bx-edit'></i> Edit</button>
+                            <button class="cancel-btn"><i class='bx bx-x'></i> Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New Appointment Button -->
+        <button class="add-appointment-btn">
+            <i class='bx bx-plus'></i>
+            New Appointment
+        </button>
+
+        <!-- Add Appointment Modal -->
+        <div class="modal" id="appointmentModal">
+            <div class="modal-content">
+                <h2>Schedule New Appointment</h2>
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <select name="patientName" required>
+                            <option value="Aarav Gupta">Aarav Gupta</option>
+                            <option value="Ananya Sharma">Ananya Sharma</option>
+                            <option value="Rohan Mehta">Rohan Mehta</option>
+                            <option value="Rishit Guha">Rishit Guha</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Doctor</label>
+                        <select name="doctor" required>
+                            <option value="Dr. Priya Sharma">Dr. Priya Sharma - Cardiologist</option>
+                            <option value="Dr. Rajesh Patel">Dr. Rajesh Patel - Pediatrician</option>
+                            <option value="Dr. Anjali Desai">Dr. Anjali Desai - Neurologist</option>
+                            <option value="Dr. Vikram Malhotra">Dr. Vikram Malhotra - Orthopedic Surgeon</option>
+                            <option value="Dr. Meera Krishnan">Dr. Meera Krishnan - Endocrinologist</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Appointment Type</label>
+                        <select name="type" required>
+                            <option value="online">Online Consultation</option>
+                            <option value="offline">In-Person Visit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time</label>
+                        <input type="time" name="time" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <select name="duration" required>
+                            <option value="30">30 minutes</option>
+                            <option value="60">1 hour</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason for Visit</label>
+                        <textarea name="reason" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-modal">Cancel</button>
+                        <button type="submit" class="save-appointment">Schedule</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script>
+            $(document).ready(function() {
+                let calendar = $('#calendar').fullCalendar({
+                    header: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'month,agendaWeek,agendaDay'
+                    },
+                    defaultView: 'month',
+                    navLinks: true,
+                    selectable: true,
+                    selectHelper: true,
+                    editable: true,
+                    eventLimit: true,
+                    height: 650,
+                    contentHeight: 600,
+                    aspectRatio: 1.8,
+                    events: [
+                        {
+                            title: 'Online: Aarav Gupta - Asthma Follow-up',
+                            start: '2025-01-06T09:00:00',
+                            end: '2025-01-06T09:30:00',
+                            color: '#4299e1',
+                            className: 'online-appointment',
+                            doctor: 'Dr. Priya Sharma',
+                            patientEmail: 'aarav.gupta@gmail.com',
+                            patientContact: '9876543210'
+                        },
+                        {
+                            title: 'In-Person: Ananya Sharma - Diabetes Check',
+                            start: '2025-01-06T11:00:00',
+                            end: '2025-01-06T12:00:00',
+                            color: '#1a365d',
+                            className: 'offline-appointment',
+                            doctor: 'Dr. Meera Krishnan',
+                            patientEmail: 'ananya.sharma@gmail.com',
+                            patientContact: '9123456789'
+                        },
+                        {
+                            title: 'Online: Rohan Mehta - Hypertension Review',
+                            start: '2025-01-06T14:00:00',
+                            end: '2025-01-06T14:30:00',
+                            color: '#4299e1',
+                            className: 'online-appointment',
+                            doctor: 'Dr. Anjali Desai',
+                            patientEmail: 'rohan.mehta@gmail.com',
+                            patientContact: '9823456781'
+                        },
+                        {
+                            title: 'In-Person: Rishit Guha - Fever Check',
+                            start: '2025-01-07T10:00:00',
+                            end: '2025-01-07T10:30:00',
+                            color: '#1a365d',
+                            className: 'offline-appointment',
+                            doctor: 'Dr. Rajesh Patel',
+                            patientEmail: 'rishitguha0824@gmail.com',
+                            patientContact: '9008329084'
+                        }
+                    ],
+                    eventClick: function(event) {
+                        $('.no-appointment-selected').hide();
+                        $('.appointment-info').show();
+                        
+                        // Parse appointment details from event title
+                        const details = event.title.split(': ');
+                        const type = details[0];
+                        const [name, reason] = details[1].split(' - ');
+                        
+                        // Update appointment details panel
+                        $('.patient-name').text(name);
+                        $('.appointment-type').text(type);
+                        $('.time-value').text(moment(event.start).format('h:mm A') + ' - ' + moment(event.end).format('h:mm A'));
+                        $('.date-value').text(moment(event.start).format('MMMM D, YYYY'));
+                        $('.reason-value').text(reason);
+                        
+                        // Add doctor information
+                        $('.doctor-name').text(event.doctor);
+                        $('.patient-email').text(event.patientEmail);
+                        $('.patient-contact').text(event.patientContact);
+                        
+                        // Show/hide video call section based on appointment type
+                        if (type === 'Online') {
+                            $('.video-call-section').show();
+                        } else {
+                            $('.video-call-section').hide();
+                        }
+                    },
+                    select: function(start, end) {
+                        $('#appointmentModal').show();
+                        $('input[name="date"]').val(moment(start).format('YYYY-MM-DD'));
+                        $('input[name="time"]').val(moment(start).format('HH:mm'));
+                    }
+                });
+
+                // Handle appointment type filtering
+                $('.type-btn').click(function() {
+                    // Remove active class from all buttons
+                    $('.type-btn').removeClass('active');
+                    $(this).addClass('active');
+
+                    const type = $(this).data('type');
+                    const events = $('#calendar').fullCalendar('clientEvents');
+
+                    if (type === 'all') {
+                        // Show all events
+                        events.forEach(event => {
+                            event.visible = true;
+                        });
+                    } else {
+                        // Filter events based on type
+                        events.forEach(event => {
+                            const eventType = event.title.toLowerCase().startsWith('online') ? 'online' : 'offline';
+                            event.visible = (eventType === type);
+                        });
+                    }
+
+                    // Refresh the calendar view
+                    $('#calendar').fullCalendar('rerenderEvents');
+                });
+
+                // Add active class to "All Appointments" button by default
+                $('.type-btn[data-type="all"]').addClass('active');
+
+                // Add these styles dynamically
+                $('<style>')
+                    .text(`
+                        .type-btn {
+                            position: relative;
+                            overflow: hidden;
+                        }
+                        
+                        .type-btn.active {
+                            background: #4299e1;
+                            color: white;
+                        }
+                        
+                        .type-btn.active:after {
+                            content: '';
+                            position: absolute;
+                            bottom: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 3px;
+                            background: #2b6cb0;
+                        }
+                    `)
+                    .appendTo('head');
+
+                // Handle form submission
+                $('#appointmentForm').on('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = {
+                        patientName: $('select[name="patientName"]').val(),
+                        doctor: $('select[name="doctor"]').val(),
+                        type: $('select[name="type"]').val(),
+                        date: $('input[name="date"]').val(),
+                        time: $('input[name="time"]').val(),
+                        duration: $('select[name="duration"]').val(),
+                        reason: $('textarea[name="reason"]').val()
+                    };
+
+                    // Create event object
+                    const startTime = moment(formData.date + ' ' + formData.time);
+                    const endTime = moment(startTime).add(parseInt(formData.duration), 'minutes');
+                    
+                    const newEvent = {
+                        title: `${formData.type === 'online' ? 'Online' : 'In-Person'}: ${formData.patientName} - ${formData.reason}`,
+                        start: startTime.format(),
+                        end: endTime.format(),
+                        color: formData.type === 'online' ? '#4299e1' : '#1a365d',
+                        className: formData.type === 'online' ? 'online-appointment' : 'offline-appointment',
+                        doctor: formData.doctor
+                    };
+
+                    // Add event to calendar
+                    $('#calendar').fullCalendar('renderEvent', newEvent, true);
+                    
+                    // Close modal and reset form
+                    $('#appointmentModal').hide();
+                    this.reset();
+                });
+
+                // Handle modal close
+                $('.cancel-modal').click(function() {
+                    $('#appointmentModal').hide();
+                });
+
+                // Close modal when clicking outside
+                $(window).click(function(event) {
+                    if ($(event.target).is('#appointmentModal')) {
+                        $('#appointmentModal').hide();
+                    }
+                });
+
+                // Open modal when clicking add appointment button
+                $('.add-appointment-btn').click(function() {
+                    $('#appointmentModal').show();
+                });
+            });
+        </script>
+        <script src="js/appointments.js"></script>
+    </body>
+</html>

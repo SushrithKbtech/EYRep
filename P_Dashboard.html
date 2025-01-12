@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESQ - Patient Dashboard</title>
+    <link rel="stylesheet" href="Dashboard.css">
+    <link rel="stylesheet" href="p_dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class='bx bx-plus-medical'></i> RESQ
+            </a>
+            <ul>
+                <li><a href="#" class="active"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                <li><a href="P_Medical_Record.html"><i class='bx bx-file'></i> Medical Records</a></li>
+                <li><a href="P_Appointment.html"><i class='bx bx-calendar'></i> Appointments</a></li>
+                <li><a href="P_Upload.html"><i class='bx bx-upload'></i> Upload Files</a></li>
+                <li><a class="sign-in" href="Start.html"><i class='bx bx-log-out'></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>Welcome Back, Patient</h1>
+        <p>Your Personal Health Dashboard</p>
+    </header>
+
+    <!-- Main Content -->
+    <div class="dashboard">
+        <!-- Profile Overview Section -->
+        <section class="profile-section">
+            <div class="profile-header">
+                <div class="profile-image">
+                    <img src="avatar.png" alt="Profile Picture">
+                    <button class="edit-photo"><i class='bx bx-camera'></i></button>
+                </div>
+                <div class="profile-info">
+                    <h2>Personal Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Phone Number:</label>
+                            <input type="tel" id="phoneNumberInput" placeholder="Enter Phone Number" required>
+                            <button id="fetchDataBtn">Fetch Data</button>
+                        </div>
+                        <div class="info-item">
+                            <label>Name:</label>
+                            <span id="patientName">Patient</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Age:</label>
+                            <span id="patientAge">--</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Gender:</label>
+                            <span id="patientGender">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- QR Code Section -->
+        <section class="qr-section">
+            <div class="card">
+                <h3><i class='bx bx-qr'></i> Your Medical QR Code</h3>
+                <div class="qr-container">
+                    <form id="qrForm" class="form-container">
+                        <div class="form-group">
+                            <label for="phoneNumber">Verify Your Phone Number:</label>
+                            <input type="tel" id="phoneNumber" class="form-control" placeholder="Phone Number" required>
+                        </div>
+                        <button type="submit" class="btn"><i class='bx bx-refresh'></i> Generate QR Code</button>
+                    </form>
+                    <div id="qrCodeContainer" class="text-center">
+                        <!-- QR code will be displayed here -->
+                    </div>
+                    <div class="qr-actions" style="display: none;">
+                        <button class="btn" id="downloadQR"><i class='bx bx-download'></i> Download</button>
+                        <button class="btn" id="shareQR"><i class='bx bx-share'></i> Share</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Emergency Contact Section -->
+        <section class="emergency-section">
+            <div class="card emergency-card">
+                <h3><i class='bx bx-phone'></i> Emergency Contact</h3>
+                <div class="emergency-info">
+                    <p><strong>Primary Contact:</strong> Rajesh Kumar (Father)</p>
+                    <p><strong>Phone:</strong> +91 98765-43210</p>
+                    <button class="btn emergency-btn"><i class='bx bx-phone-call'></i> Call Emergency</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="p_dashboard.js"></script>
+</body>
+</html>

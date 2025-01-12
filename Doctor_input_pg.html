@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESQ - Doctor Input</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles1.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class='bx bx-plus-medical'></i> RESQ
+            </a>
+            <ul>
+                <li><a href="Dashboard.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                <li><a href="Patient_Record.Html"><i class='bx bx-user'></i> Patients</a></li>
+                <li><a href="Appointment.html"><i class='bx bx-calendar'></i> Appointments</a></li>
+                <li><a href="Doctor_side.html" class="active"><i class='bx bx-qr'></i> QR Check</a></li>
+                <li><a class="sign-in" href="#"><i class='bx bx-log-out'></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Patient Summary -->
+        <div class="summary-section">
+            <h2><i class='bx bx-user-circle'></i> Patient Summary</h2>
+            <div id="summaryContainer" class="summary-content">Loading summary...</div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <div class="chart-box">
+                <h2><i class='bx bx-line-chart'></i> BMI Trend</h2>
+                <canvas id="bmiChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h2><i class='bx bx-line-chart'></i> Blood Sugar Trend</h2>
+                <canvas id="bloodSugarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Diagnosis Form -->
+            <div class="form-container">
+                <h2><i class='bx bx-notepad'></i> Enter Diagnosis</h2>
+                <form id="diagnosisForm">
+                    <div class="form-group">
+                        <label for="symptoms"><i class='bx bx-list-plus'></i> Symptoms:</label>
+                        <textarea id="symptoms" class="form-control" rows="4" placeholder="Enter symptoms..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="diagnosis"><i class='bx bx-file'></i> Diagnosis:</label>
+                        <textarea id="diagnosis" class="form-control" rows="4" placeholder="Enter diagnosis..." required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="height"><i class='bx bx-ruler'></i> Height (cm):</label>
+                            <input type="number" id="height" class="form-control" placeholder="Enter height in cm" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="weight"><i class='bx bx-weight'></i> Weight (kg):</label>
+                            <input type="number" id="weight" class="form-control" placeholder="Enter weight in kg" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bloodSugar"><i class='bx bx-droplet'></i> Blood Sugar Level (mg/dL):</label>
+                        <input type="number" id="bloodSugar" class="form-control" placeholder="Enter blood sugar level" required />
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn">
+                            <i class='bx bx-save'></i> Save Diagnosis
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='Doctor_side.html'">
+                            <i class='bx bx-arrow-back'></i> Back to Scanner
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Saved Diagnoses -->
+            <div class="saved-records">
+                <h2><i class='bx bx-history'></i> Previous Diagnoses</h2>
+                <div id="recordsContainer" class="records-grid">
+                    <!-- Records will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const phoneNumber = urlParams.get('phoneNumber'); // Extract phone number from URL
+
+        const bmiChartCtx = document.getElementById('bmiChart').getContext('2d');
+        const bloodSugarChartCtx = document.getElementById('bloodSugarChart').getContext('2d');
+        let bmiChart, bloodSugarChart;
+
+        // Fetch and render data
+        async function fetchData(endpoint, method = 'GET', body = null) {
+            try {
+                const response = await fetch(endpoint, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body ? JSON.stringify(body) : null,
+                });
+                return response.ok ? response.json() : null;
+            } catch (error) {
+                console.error(`Error fetching ${endpoint}:`, error);
+                return null;
+            }
+        }
+
+        // Render Charts
+        function renderChart(ctx, labels, datasetLabel, data, borderColor, bgColor) {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: datasetLabel,
+                            data,
+                            borderColor,
+                            backgroundColor: bgColor,
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(26, 54, 93, 0.9)',
+                            padding: 10,
+                            cornerRadius: 4,
+                            titleFont: {
+                                size: 13
+                            },
+                            bodyFont: {
+                                size: 12
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                },
+            });
+        }
+
+        async function fetchAndRenderData() {
+            if (!phoneNumber) {
+                document.getElementById('recordsContainer').innerText = 'No phone number provided.';
+                return;
+            }
+
+            // Fetch diagnoses
+            const records = await fetchData(`http://localhost:3000/get-diagnoses/${phoneNumber}`);
+            const summary = await fetchData(`http://localhost:3000/summarize-patient/${phoneNumber}`);
+
+            if (records) {
+                const bmiData = records.map((r) => r.bmi);
+                const sugarData = records.map((r) => r.blood_sugar);
+                const dates = records.map((r) => {
+                    const date = new Date(r.created_at);
+                    return date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                });
+
+                if (bmiChart) bmiChart.destroy();
+                if (bloodSugarChart) bloodSugarChart.destroy();
+
+                bmiChart = renderChart(
+                    bmiChartCtx, 
+                    dates, 
+                    'BMI', 
+                    bmiData, 
+                    '#4299e1', 
+                    'rgba(66, 153, 225, 0.1)'
+                );
+                bloodSugarChart = renderChart(
+                    bloodSugarChartCtx, 
+                    dates, 
+                    'Blood Sugar', 
+                    sugarData, 
+                    '#f56565', 
+                    'rgba(245, 101, 101, 0.1)'
+                );
+            }
+
+            // Display saved records
+            const recordsContainer = document.getElementById('recordsContainer');
+            recordsContainer.innerHTML = records
+                ? records.map((r) => `
+                    <div>
+                        <p>Date: ${new Date(r.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        })}</p>
+                        <p>Symptoms: ${r.symptoms}</p>
+                        <p>Diagnosis: ${r.diagnosis}</p>
+                        <p>BMI: ${r.bmi}</p>
+                        <p>Blood Sugar: ${r.blood_sugar}</p>
+                        <hr />
+                    </div>
+                `).join('')
+                : 'No records found.';
+
+            // Display summary
+            const summaryContainer = document.getElementById('summaryContainer');
+            summaryContainer.innerText = summary ? summary.summary : 'Summary not available.';
+        }
+
+        // Handle form submission
+        document.getElementById('diagnosisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const symptoms = document.getElementById('symptoms').value;
+            const diagnosis = document.getElementById('diagnosis').value;
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const bloodSugar = parseFloat(document.getElementById('bloodSugar').value);
+
+            const success = await fetchData('http://localhost:3000/save-diagnosis', 'POST', {
+                phoneNumber, symptoms, diagnosis, height, weight, bloodSugar,
+            });
+
+            document.getElementById('responseMessage').innerText = success
+                ? 'Diagnosis saved successfully!'
+                : 'Failed to save diagnosis.';
+
+            fetchAndRenderData(); // Refresh data
+        });
+
+        // Fetch data on page load
+        fetchAndRenderData();
+        document.getElementById('diagnosisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const symptoms = document.getElementById('symptoms').value;
+            const diagnosis = document.getElementById('diagnosis').value;
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const bloodSugar = parseFloat(document.getElementById('bloodSugar').value);
+
+            try {
+                const response = await fetch('http://localhost:3000/save-diagnosis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber, symptoms, diagnosis, height, weight, bloodSugar }),
+                });
+
+                if (response.ok) {
+                    alert('Diagnosis saved successfully!');
+                    // Redirect to the patient summary page
+                    window.location.href = `summary.html?phoneNumber=${phoneNumber}`;
+                } else {
+                    alert('Failed to save diagnosis. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error saving diagnosis:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

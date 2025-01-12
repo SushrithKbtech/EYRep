@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESQ - Upload Files</title>
+    <link rel="stylesheet" href="Dashboard.css">
+    <link rel="stylesheet" href="upload.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class='bx bx-plus-medical'></i> RESQ
+            </a>
+            <ul>
+                <li><a href="P_Dashboard.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                <li><a href="P_Appointment.html"><i class='bx bx-calendar'></i> Appointments</a></li>
+                <li><a href="P_Medical_Record.html"><i class='bx bx-file'></i> Medical Records</a></li>
+                <li><a href="#" class="active"><i class='bx bx-upload'></i> Upload Files</a></li>
+                <li><a class="sign-in" href="#"><i class='bx bx-log-out'></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>Upload Medical Files</h1>
+        <p>Securely upload and manage your medical documents</p>
+    </header>
+
+    <main class="upload-container">
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <div class="upload-box" id="dropZone">
+                <i class='bx bx-cloud-upload'></i>
+                <h3>Drag and drop files here</h3>
+                <p>or</p>
+                <label for="fileInput" class="upload-btn">Browse Files</label>
+                <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" hidden>
+                <p class="file-types">Supported files: PDF, JPG, PNG, DOC</p>
+            </div>
+        </section>
+
+        <!-- Recent Uploads -->
+        <section class="recent-uploads">
+            <div class="section-header">
+                <h2><i class='bx bx-time'></i> Recent Uploads</h2>
+                <div class="header-actions">
+                    <button class="filter-btn"><i class='bx bx-filter'></i> Filter</button>
+                    <button class="sort-btn"><i class='bx bx-sort'></i> Sort</button>
+                </div>
+            </div>
+            <div class="uploads-list" id="uploadsList">
+                <!-- Upload items will be added here dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadsList = document.getElementById('uploadsList');
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Highlight drop zone when dragging over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+        fileInput.addEventListener('change', handleFiles, false);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            dropZone.classList.add('highlight');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('highlight');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles({ target: { files } });
+        }
+
+        function handleFiles(e) {
+            const files = [...e.target.files];
+            files.forEach(uploadFile);
+        }
+
+        function uploadFile(file) {
+            // Create upload item element
+            const uploadItem = document.createElement('div');
+            uploadItem.className = 'upload-item';
+            uploadItem.innerHTML = `
+                <div class="file-icon">
+                    <i class='bx bx-file'></i>
+                </div>
+                <div class="file-details">
+                    <h3>${file.name}</h3>
+                    <div class="upload-progress">
+                        <div class="progress-bar" style="width: 0%"></div>
+                    </div>
+                    <span class="file-size">${formatFileSize(file.size)}</span>
+                </div>
+                <div class="file-actions">
+                    <button class="cancel-btn"><i class='bx bx-x'></i></button>
+                </div>
+            `;
+
+            // Add to uploads list
+            uploadsList.insertBefore(uploadItem, uploadsList.firstChild);
+
+            // Simulate upload progress
+            simulateUpload(uploadItem);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function simulateUpload(uploadItem) {
+            const progressBar = uploadItem.querySelector('.progress-bar');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    uploadItem.classList.add('completed');
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>

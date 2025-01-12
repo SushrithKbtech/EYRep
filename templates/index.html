@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Healthcare Assistant</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <h1>Healthcare Chatbot</h1>
+            <p>Your professional medical assistant</p>
+        </header>
+        <div class="language-selection">
+            <label for="language-select">🌐 Language:</label>
+            <select id="language-select">
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="ta">Tamil</option>
+                <option value="te">Telugu</option>
+                <option value="kn">Kannada</option>
+                <option value="ml">Malayalam</option>
+                <option value="bn">Bengali</option>
+                <option value="gu">Gujarati</option>
+                <option value="mr">Marathi</option>
+                <option value="pa">Punjabi</option>
+                <option value="or">Odia</option>
+                <option value="as">Assamese</option>
+                <option value="ur">Urdu</option>
+            </select>
+        </div>
+        
+        <div class="chat-box" id="chat-box"></div>
+        <div class="chat-input-container">
+            <button id="voice-btn">🎤</button>
+            <input type="text" id="chat-input" placeholder="Type your health-related query here..." />
+            <button id="send-btn">Send</button>
+            <button id="pause-btn">Pause</button>
+            <button id="resume-btn">Resume</button>
+            <button id="end-chat-btn" class="end-chat">End Chat</button>
+        </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

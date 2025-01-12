@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previous Diagnoses</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <label class="logo">ResQ</label>
+        <ul>
+            <li><a class="active" href="#">Home</a></li>
+            <li><a href="#">Find Doctors</a></li>
+            <li><a href="#">SignIn/LogIn</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Previous Diagnoses</h1>
+        <div id="recordsContainer">Loading...</div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const phoneNumber = urlParams.get('phoneNumber');
+
+        async function fetchPreviousDiagnoses(phoneNumber) {
+            try {
+                const response = await fetch(`http://localhost:3000/get-diagnoses/${phoneNumber}`);
+                const recordsContainer = document.getElementById('recordsContainer');
+
+                if (response.ok) {
+                    const records = await response.json();
+                    if (records.length > 0) {
+                        recordsContainer.innerHTML = records.map(record => `
+                            <div class="record">
+                                <p><strong>Date:</strong> ${new Date(record.created_at).toLocaleString()}</p>
+                                <p><strong>Symptoms:</strong> ${record.symptoms}</p>
+                                <p><strong>Diagnosis:</strong> ${record.diagnosis}</p>
+                                <p><strong>BMI:</strong> ${record.bmi}</p>
+                                <hr>
+                                                            </div>
+                        `).join('');
+                    } else {
+                        recordsContainer.innerHTML = `<p>No previous diagnoses found.</p>`;
+                    }
+                } else {
+                    recordsContainer.innerHTML = `<p>Failed to fetch diagnoses. Please try again later.</p>`;
+                }
+            } catch (error) {
+                console.error('Error fetching diagnoses:', error);
+                document.getElementById('recordsContainer').textContent = 'An error occurred while loading records.';
+            }
+        }
+
+        // Fetch and display previous diagnoses on page load
+        if (phoneNumber) {
+            fetchPreviousDiagnoses(phoneNumber);
+        } else {
+            document.getElementById('recordsContainer').textContent = 'Invalid phone number.';
+        }
+    </script>
+</body>
+</html>
+

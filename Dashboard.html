@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESQ - Medical Dashboard</title>
+    <link rel="stylesheet" href="Dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class='bx bx-plus-medical'></i> RESQ
+            </a>
+            <ul>
+                <li><a href="#" class="active"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                <li><a href="Patient_Record.Html"><i class='bx bx-user'></i> Patients</a></li>
+                <li><a href="Appointment.html"><i class='bx bx-calendar'></i> Appointments</a></li>
+                <li><a href="Doctor_side.html"><i class='bx bx-qr'></i> QR Check</a></li>
+                <li><a class="sign-in" href="Start.html"><i class='bx bx-log-out'></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>Welcome Back, Dr. Priya Sharma</h1>
+        <p>Monday, January 6, 2025 | Your Medical Dashboard</p>
+    </header>
+
+    <!-- Main Content -->
+    <div class="dashboard">
+        <!-- Metrics Section -->
+        <section class="metrics">
+            <div class="card">
+                <h3>Today's Patients</h3>
+                <p>7</p>
+                <span class="trend positive">
+                    <i class='bx bx-up-arrow-alt'></i>
+                    12% from last week
+                </span>
+            </div>
+            <div class="card">
+                <h3>Pending Reports</h3>
+                <p>5</p>
+                <span class="trend neutral">
+                    <i class='bx bx-right-arrow-alt'></i>
+                    Same as yesterday
+                </span>
+            </div>
+            <div class="card">
+                <h3>Total Patients</h3>
+                <p>150</p>
+                <span class="trend positive">
+                    <i class='bx bx-up-arrow-alt'></i>
+                    5% this month
+                </span>
+            </div>
+            <div class="card">
+                <h3>Patient Satisfaction</h3>
+                <p>4.8</p>
+                <div class="stars">
+                    <i class='bx bxs-star'></i>
+                    <i class='bx bxs-star'></i>
+                    <i class='bx bxs-star'></i>
+                    <i class='bx bxs-star'></i>
+                    <i class='bx bxs-star-half'></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts">
+            <div class="chart-box">
+                <h3><i class='bx bx-line-chart'></i> Patient Visits Trend</h3>
+                <canvas id="workingHoursChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3><i class='bx bx-pie-chart-alt-2'></i> Case Distribution</h3>
+                <canvas id="diagnosisChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Appointment Timeline Section -->
+        <section class="timeline">
+            <h3><i class='bx bx-calendar-check'></i> Today's Appointments</h3>
+            <div class="timeline-grid">
+                <div class="appointment-card">
+                    <div class="time">09:00 AM</div>
+                    <div class="details">
+                        <h4>Aarav Gupta</h4>
+                        <p>Follow-up Consultation</p>
+                    </div>
+                    <div class="status upcoming">Upcoming</div>
+                </div>
+                <div class="appointment-card">
+                    <div class="time">10:30 AM</div>
+                    <div class="details">
+                        <h4>Ananya Sharma</h4>
+                        <p>General Checkup</p>
+                    </div>
+                    <div class="status upcoming">Upcoming</div>
+                </div>
+                <div class="appointment-card">
+                    <div class="time">02:00 PM</div>
+                    <div class="details">
+                        <h4>Rohan Mehta</h4>
+                        <p>Initial Consultation</p>
+                    </div>
+                    <div class="status upcoming">Upcoming</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Patient Visits Chart
+        const ctx1 = document.getElementById('workingHoursChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                datasets: [
+                    {
+                        label: 'In-Person Visits',
+                        data: [25, 30, 28, 32, 30],
+                        borderColor: '#1a365d',
+                        backgroundColor: 'rgba(26, 54, 93, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Telemedicine',
+                        data: [15, 20, 18, 22, 20],
+                        borderColor: '#4299e1',
+                        backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Case Distribution Chart
+        const ctx2 = document.getElementById('diagnosisChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['General Checkup', 'Chronic Care', 'Emergency', 'Follow-up'],
+                datasets: [{
+                    data: [40, 25, 15, 20],
+                    backgroundColor: [
+                        '#1a365d',
+                        '#2c5282',
+                        '#4299e1',
+                        '#63b3ed'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

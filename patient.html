@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient QR Code Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <label class="logo">ResQ</label> 
+        <ul>
+            <li><a class="active" href="#">Home</a></li>
+            <li><a href="#">Find Doctors</a></li>
+            <li><a href="#">SignIn/LogIn</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="doctor-info">
+            <h1 class="text-center">Generate Your QR Code</h1>
+            <form id="qrForm" class="form-container">
+                <div class="form-group">
+                    <label for="phoneNumber">Enter Your Phone Number:</label>
+                    <input type="tel" id="phoneNumber" class="form-control" placeholder="Phone Number" required>
+                </div>
+                <button type="submit" class="btn">Generate QR Code</button>
+            </form>
+            <div id="qrCodeContainer" class="text-center mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('qrForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const phoneNumber = document.getElementById('phoneNumber').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/generate-qr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('qrCodeContainer').innerHTML = `
+                        <h2>Your QR Code:</h2>
+                        <img src="${data.qrCodeUrl}" alt="QR Code" class="qr-image mt-3">
+                    `;
+                } else {
+                    document.getElementById('qrCodeContainer').innerHTML = `<p class="text-danger">Error generating QR code.</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('qrCodeContainer').innerHTML = `<p class="text-danger">An error occurred. Try again.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

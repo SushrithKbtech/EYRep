@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESQ - My Appointments</title>
+    <link rel="stylesheet" href="Dashboard.css">
+    <link rel="stylesheet" href="p_appointment.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class='bx bx-plus-medical'></i> RESQ
+            </a>
+            <ul>
+                <li><a href="P_Dashboard.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                <li><a href="#" class="active"><i class='bx bx-calendar'></i> Appointments</a></li>
+                <li><a href="P_Medical_Record.html"><i class='bx bx-file'></i> Medical Records</a></li>
+                <li><a href="P_Upload.html"><i class='bx bx-upload'></i> Upload Files</a></li>
+                <li><a class="sign-in" href="#"><i class='bx bx-log-out'></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>My Appointments</h1>
+        <p>View and manage your upcoming appointments</p>
+    </header>
+
+    <div class="dashboard">
+        <!-- Appointment Stats -->
+        <div class="appointment-stats">
+            <div class="stat-card">
+                <i class='bx bx-calendar-check'></i>
+                <h3>Upcoming</h3>
+                <p class="count">2</p>
+            </div>
+            <div class="stat-card">
+                <i class='bx bx-video'></i>
+                <h3>Online Consultations</h3>
+                <p class="count">1</p>
+            </div>
+            <div class="stat-card">
+                <i class='bx bx-clinic'></i>
+                <h3>In-Person Visits</h3>
+                <p class="count">1</p>
+            </div>
+            <div class="stat-card">
+                <i class='bx bx-history'></i>
+                <h3>Past Appointments</h3>
+                <p class="count">8</p>
+            </div>
+        </div>
+
+        <!-- Appointment Sections -->
+        <div class="appointments-container">
+            <!-- Upcoming Appointments -->
+            <section class="appointment-section">
+                <h2><i class='bx bx-calendar-check'></i> Upcoming Appointments</h2>
+                
+                <div class="appointment-list">
+                    <!-- Online Consultation -->
+                    <div class="appointment-card online">
+                        <div class="appointment-type">
+                            <i class='bx bx-video'></i>
+                            <span>Online Consultation</span>
+                        </div>
+                        <div class="appointment-info">
+                            <h3>Dr. Priya Sharma</h3>
+                            <p class="specialty">Cardiologist</p>
+                            <div class="appointment-time">
+                                <i class='bx bx-time'></i>
+                                <span>Tomorrow, 10:00 AM</span>
+                            </div>
+                            <div class="appointment-details">
+                                <p><i class='bx bx-time'></i> Consultation Hours: 9:00 AM - 5:00 PM</p>
+                                <p><i class='bx bx-envelope'></i> dr.priya.sharma@cityhospital.com</p>
+                            </div>
+                        </div>
+                        <div class="appointment-actions">
+                            <a href="#" class="btn join-btn" onclick="joinVideoCall('https://meet.google.com/your-meeting-id')">
+                                <i class='bx bx-video'></i>
+                                Join Call
+                            </a>
+                            <button class="btn cancel-btn">
+                                <i class='bx bx-x'></i>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- In-Person Visit -->
+                    <div class="appointment-card in-person">
+                        <div class="appointment-type">
+                            <i class='bx bx-clinic'></i>
+                            <span>In-Person Visit</span>
+                        </div>
+                        <div class="appointment-info">
+                            <h3>Dr. Rajesh Patel</h3>
+                            <p class="specialty">Pediatrician</p>
+                            <div class="appointment-time">
+                                <i class='bx bx-time'></i>
+                                <span>Jan 15, 2025, 2:30 PM</span>
+                            </div>
+                            <div class="appointment-location">
+                                <i class='bx bx-map'></i>
+                                <span>Health Clinic, Room 205</span>
+                            </div>
+                            <div class="appointment-details">
+                                <p><i class='bx bx-time'></i> Consultation Hours: 10:00 AM - 6:00 PM</p>
+                                <p><i class='bx bx-envelope'></i> dr.rajesh.patel@healthclinic.com</p>
+                            </div>
+                        </div>
+                        <div class="appointment-actions">
+                            <a href="#" class="btn directions-btn">
+                                <i class='bx bx-map'></i>
+                                Get Directions
+                            </a>
+                            <button class="btn cancel-btn">
+                                <i class='bx bx-x'></i>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Past Appointments -->
+            <section class="appointment-section past-appointments">
+                <h2><i class='bx bx-history'></i> Past Appointments</h2>
+                
+                <div class="appointment-list">
+                    <div class="appointment-card completed">
+                        <div class="appointment-type">
+                            <i class='bx bx-video'></i>
+                            <span>Online Consultation</span>
+                        </div>
+                        <div class="appointment-info">
+                            <h3>Dr. Anjali Desai</h3>
+                            <p class="specialty">Neurologist</p>
+                            <div class="appointment-time">
+                                <i class='bx bx-time'></i>
+                                <span>Jan 5, 2025, 11:00 AM</span>
+                            </div>
+                            <div class="appointment-details">
+                                <p><i class='bx bx-time'></i> Consultation Hours: 8:00 AM - 4:00 PM</p>
+                                <p><i class='bx bx-envelope'></i> dr.anjali.desai@cityhospital.com</p>
+                            </div>
+                        </div>
+                        <div class="appointment-actions">
+                            <button class="btn view-summary-btn">
+                                <i class='bx bx-file'></i>
+                                View Summary
+                            </button>
+                            <button class="btn book-again-btn">
+                                <i class='bx bx-calendar-plus'></i>
+                                Book Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+<script>
+function joinVideoCall(meetingUrl) {
+    // Check if URL is provided
+    if (!meetingUrl) {
+        alert('Video call link is not available. Please contact your doctor.');
+        return;
+    }
+    
+    // Open meeting in new tab
+    window.open(meetingUrl, '_blank');
+}
+</script>
+</html>

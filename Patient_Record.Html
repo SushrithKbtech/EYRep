@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESQ - Patient Records</title>
+    <link rel="stylesheet" href="Patient_Record.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class='bx bx-plus-medical'></i> RESQ
+            </a>
+            <ul>
+                <li><a href="Dashboard.html" class="active"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                <li><a href="#"><i class='bx bx-user'></i> Patients</a></li>
+                <li><a href="Appointment.html"><i class='bx bx-calendar'></i> Appointments</a></li>
+                <li><a href="#"><i class='bx bx-qr'></i> QR Check</a></li>
+                <li><a class="sign-in" href="#"><i class='bx bx-log-out'></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="home">
+        <div class="patient-records-container">
+            <!-- Search and Filter Section -->
+            <div class="search-section">
+                <div class="search-bar">
+                    <i class='bx bx-search'></i>
+                    <input type="text" id="patientSearch" placeholder="Search patients by name or ID...">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All Patients</button>
+                    <button class="filter-btn" data-filter="recent">Recent</button>
+                    <button class="filter-btn" data-filter="critical">Critical</button>
+                </div>
+            </div>
+
+            <!-- Patient List and Details Section -->
+            <div class="records-content">
+                <!-- Patient List -->
+                <div class="patient-list">
+                    <h2>Patient List</h2>
+                    <div class="patient-cards" id="patientList">
+                        <!-- Patient cards will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Patient Details -->
+                <div class="patient-details">
+                    <div class="no-patient-selected">
+                        <i class='bx bx-user-circle'></i>
+                        <p>Select a patient to view details</p>
+                    </div>
+                    <div class="patient-info" style="display: none;">
+                        <div class="patient-header">
+                            <div class="patient-avatar">
+                                <i class='bx bxs-user-circle'></i>
+                            </div>
+                            <div class="patient-basic-info">
+                                <h2 class="patient-name">Patient Name</h2>
+                                <p class="patient-id">ID: <span></span></p>
+                                <p class="patient-status">Status: <span></span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-sections">
+                            <div class="info-section">
+                                <h3>Personal Information</h3>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <label>Age</label>
+                                        <p class="age-value">-</p>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Gender</label>
+                                        <p class="gender-value">-</p>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Blood Type</label>
+                                        <p class="blood-type-value">-</p>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Contact</label>
+                                        <p class="contact-value">-</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-section">
+                                <h3>Medical History</h3>
+                                <div class="medical-history">
+                                    <!-- Medical history entries will be populated by JavaScript -->
+                                </div>
+                                <div class="info-item">
+                                    <label>QR Code</label>
+                                    <img id="qr-code-image" src="" alt="Patient QR Code" style="max-width: 150px; margin-top: 10px; display: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Array to store fetched patients
+        let patients = [];
+    
+        // Fetch patients from the backend
+        async function fetchPatients() {
+            try {
+                const response = await fetch('http://localhost:3000/patients');
+                patients = await response.json(); // Update the patients array dynamically
+                populatePatientList(patients);
+            } catch (error) {
+                console.error('Error fetching patients:', error);
+            }
+        }
+    
+        // Populate the patient list
+        function populatePatientList(patientList) {
+            const patientListElement = document.getElementById('patientList');
+            patientListElement.innerHTML = '';
+    
+            patientList.forEach(patient => {
+                const patientCard = document.createElement('div');
+                patientCard.className = `patient-card ${patient.status?.toLowerCase() || 'stable'}`;
+                patientCard.innerHTML = `
+                    <div class="patient-card-header">
+                        <h3>${patient.name || 'Unknown'}</h3>
+                        <span class="patient-id">${patient.id || 'N/A'}</span>
+                    </div>
+                    <div class="patient-card-info">
+                        <p><i class='bx bx-calendar'></i> Last Visit: ${patient.medicalHistory?.[0]?.date || 'N/A'}</p>
+                        <p><i class='bx bx-phone'></i> ${patient.contact || 'N/A'}</p>
+                    </div>
+                    <button class="view-details-btn">View Details</button>
+                `;
+    
+                patientCard.querySelector('.view-details-btn').addEventListener('click', () => {
+                    showPatientDetails(patient);
+                });
+    
+                patientListElement.appendChild(patientCard);
+            });
+        }
+    
+        // Show patient details
+        function showPatientDetails(patient) {
+            document.querySelector('.no-patient-selected').style.display = 'none';
+            document.querySelector('.patient-info').style.display = 'block';
+    
+            // Update basic info
+            document.querySelector('.patient-name').textContent = patient.name || 'Unknown';
+            document.querySelector('.patient-id span').textContent = patient.id || 'N/A';
+            document.querySelector('.patient-status span').textContent = patient.status || 'Unknown';
+    
+            // Update personal information
+            document.querySelector('.age-value').textContent = patient.age || '-';
+            document.querySelector('.gender-value').textContent = patient.gender || '-';
+            document.querySelector('.blood-type-value').textContent = patient.bloodType || '-';
+            document.querySelector('.contact-value').textContent = patient.contact || '-';
+    
+            // Show QR code for "Rishit Guha"
+            const qrCodeImage = document.getElementById('qr-code-image');
+            if (patient.name === 'Rishit Guha') {
+                qrCodeImage.src = './QR_Code_1.png'; // Update with the correct path to your QR Code
+                qrCodeImage.style.display = 'block';
+            } else {
+                qrCodeImage.style.display = 'none';
+            }
+    
+            // Update medical history
+            const medicalHistoryElement = document.querySelector('.medical-history');
+            if (patient.medicalHistory && patient.medicalHistory.length > 0) {
+                medicalHistoryElement.innerHTML = patient.medicalHistory.map(history => `
+                    <div class="history-entry">
+                        <div class="history-date">${history.date || 'N/A'}</div>
+                        <div class="history-details">
+                            <h4>${history.condition || 'N/A'}</h4>
+                            <p>${history.notes || ''}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                medicalHistoryElement.innerHTML = ''; // Leave blank if no history is available
+            }
+        }
+    
+        // Search patients
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('patientSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function (e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const filteredPatients = patients.filter(patient =>
+                        (patient.name || '').toLowerCase().includes(searchTerm) ||
+                        (patient.id || '').toLowerCase().includes(searchTerm)
+                    );
+                    populatePatientList(filteredPatients);
+                });
+            } else {
+                console.error('Search input element not found.');
+            }
+    
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    filterPatients(this.dataset.filter);
+                });
+            });
+    
+            // Fetch patients on page load
+            fetchPatients();
+        });
+    
+        // Filter patients
+        function filterPatients(filter) {
+            let filteredPatients = [...patients];
+    
+            switch (filter) {
+                case 'recent':
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                    filteredPatients = patients.filter(patient =>
+                        patient.appointments?.some(apt => new Date(apt.date) >= sevenDaysAgo)
+                    );
+                    break;
+                case 'critical':
+                    filteredPatients = patients.filter(patient => patient.status?.toLowerCase() === 'critical');
+                    break;
+            }
+    
+            populatePatientList(filteredPatients);
+        }
+    </script>
+</body>
+</html>

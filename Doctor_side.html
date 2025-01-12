@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESQ - QR Scanner</title>
+    <link rel="stylesheet" href="Doctor_side.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class='bx bx-plus-medical'></i> RESQ
+            </a>
+            <ul>
+                <li><a href="Dashboard.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                <li><a href="Patient_Record.Html"><i class='bx bx-user'></i> Patients</a></li>
+                <li><a href="Appointment.html"><i class='bx bx-calendar'></i> Appointments</a></li>
+                <li><a href="#" class="active"><i class='bx bx-qr'></i> QR Check</a></li>
+                <li><a class="sign-in" href="#"><i class='bx bx-log-out'></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <!-- QR Scanner Section -->
+        <div class="scanner-section">
+            <h2><i class='bx bx-qr-scan'></i> Scan Patient's QR Code</h2>
+            <video id="videoPreview" class="qr-video"></video>
+            <div class="scanner-controls">
+                <div id="scanStatus" class="scanner-status">
+                    <i class='bx bx-loader-alt bx-spin'></i>
+                    Initializing scanner...
+                </div>
+                <a id="nextButton" href="doctor_input_pg.html" class="scanner-btn" style="display: none;">
+                    <i class='bx bx-right-arrow-alt'></i>
+                    Proceed to Input
+                </a>
+            </div>
+        </div>
+
+        <!-- Patient Info Section -->
+        <div class="patient-info">
+            <h2><i class='bx bx-user-circle'></i> Patient Details</h2>
+            <div class="patient-details">
+                <div class="info-card">
+                    <div class="info-label">Patient Name</div>
+                    <div class="info-value" id="name">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Age</div>
+                    <div class="info-value" id="age">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Gender</div>
+                    <div class="info-value" id="gender">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Contact Number</div>
+                    <div class="info-value" id="contact">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const codeReader = new ZXing.BrowserQRCodeReader();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const videoPreview = document.getElementById('videoPreview');
+            const scanStatus = document.getElementById('scanStatus');
+            const nextButton = document.getElementById('nextButton');
+            const patientDetails = {
+                name: document.getElementById('name'),
+                age: document.getElementById('age'),
+                gender: document.getElementById('gender'),
+                contact: document.getElementById('contact')
+            };
+
+            codeReader.decodeFromVideoDevice(null, 'videoPreview', async (result, error) => {
+                if (result) {
+                    scanStatus.innerHTML = '<i class="bx bx-check-circle"></i> QR Code Scanned Successfully!';
+                    const phoneNumber = result.text;
+
+                    try {
+                        const response = await fetch(`http://localhost:3000/get-patient/${phoneNumber}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            patientDetails.name.textContent = data.patient.name;
+                            patientDetails.age.textContent = data.patient.age;
+                            patientDetails.gender.textContent = data.patient.gender;
+                            patientDetails.contact.textContent = phoneNumber;
+
+                            nextButton.href = `doctor_input_pg.html?phoneNumber=${phoneNumber}`;
+                            nextButton.style.display = 'flex';
+                        } else {
+                            scanStatus.innerHTML = '<i class="bx bx-error"></i> Error fetching patient data.';
+                        }
+                    } catch (err) {
+                        scanStatus.innerHTML = '<i class="bx bx-error-circle"></i> An unexpected error occurred.';
+                        console.error(err);
+                    }
+                } else if (error) {
+                    scanStatus.innerHTML = '<i class="bx bx-scan"></i> Scanning...';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
