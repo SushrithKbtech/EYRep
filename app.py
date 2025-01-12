@@ -1,184 +1,159 @@
-from flask import Flask, request, jsonify, render_template, send_file
-import openai
-import sqlite3
+from flask import Flask, render_template, request, jsonify, send_file
+from flask_socketio import SocketIO, join_room, emit
+from flask_cors import CORS
 from fpdf import FPDF
 import os
+import sqlite3
+import speech_recognition as sr
+import openai  # For integrating ChatGPT API
+
+# Initialize OpenAI API key
+openai.api_key = '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'  # Replace with your actual OpenAI API key
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS
+socketio = SocketIO(app, cors_allowed_origins="*")  # Allow cross-origin requests
 
-# GPT API Configuration
-openai.api_key = "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"
+# Ensure the uploads directory exists
+if not os.path.exists("uploads"):
+    os.makedirs("uploads")
 
-# Database Initialization
-DATABASE = "healthcare.db"
-if not os.path.exists(DATABASE):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE patients (
-            id INTEGER PRIMARY KEY AUTOINCREMENT
-        )
-    ''')
-    c.execute('''
-        CREATE TABLE chats (
+# Doctor-patient mapping
+appointments = {
+    "doctor_suresh": ["ravi", "shreya"],
+}
+
+# Database setup
+def init_db():
+    conn = sqlite3.connect("recordings.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS recordings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_id INTEGER,
-            message TEXT,
-            sender TEXT,
-            FOREIGN KEY(patient_id) REFERENCES patients(id)
+            filename TEXT NOT NULL,
+            file_path TEXT NOT NULL,
+            transcription TEXT
         )
-    ''')
+    """)
     conn.commit()
     conn.close()
 
-# Function to classify health-related queries
-def is_health_prompt(prompt):
-    # Remove strict classification for follow-up queries
-    return True
+init_db()
 
-# Route: Serve Frontend
 @app.route("/")
 def index():
     return render_template("index.html")
 
-# Route: Start Chat
-@app.route("/start_chat", methods=["POST"])
-def start_chat():
-    patient_id = request.json.get("patient_id")
-    chat_history = [{"role": "assistant", "content": "Hello! How can I assist you today?"}]
+@app.route("/doctor/<doctor_id>")
+def doctor(doctor_id):
+    if doctor_id in appointments:
+        room = f"{doctor_id}-general"
+        return render_template("doctor.html", doctor_id=doctor_id, room=room)
+    return "Doctor not found", 404
 
-    # Store the initial message in the database
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("INSERT INTO chats (patient_id, message, sender) VALUES (?, ?, ?)", (patient_id, "Hello! How can I assist you today?", "ai"))
-    conn.commit()
-    conn.close()
+@app.route("/patient/<patient_name>")
+def patient(patient_name):
+    for doctor, patients in appointments.items():
+        if patient_name in patients:
+            room = f"{doctor}-general"
+            return render_template("patient.html", patient_name=patient_name, doctor_id=doctor, room=room)
+    return "Patient not found", 404
 
-    return jsonify({"response": "Hello! How can I assist you today?", "chat_history": chat_history})
+@app.route("/call/<room>")
+def video_call(room):
+    return render_template("call.html", room=room)
 
-# Route: Handle Chat
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.json
-    patient_id = data.get("patient_id")
-    prompt = data.get("prompt")
-    chat_history = data.get("chat_history", [])
+@app.route("/process_transcription", methods=["POST"])
+def process_transcription():
+    data = request.get_json()
+    transcription = data.get("transcription")
+    
+    if not transcription:
+        return jsonify({"error": "No transcription received"}), 400
 
-    if prompt.lower() == "end chat":
-        report_path = generate_report(patient_id, chat_history)
-        return jsonify({"response": "Thank you for providing all the information. Your report is ready. It will now be downloaded.", "report_path": report_path})
+    # Save transcription to a text file
+    transcription_path = "uploads/transcriptions.txt"
+    try:
+        with open(transcription_path, "a") as f:
+            f.write(transcription + "\n\n")
+    except Exception as e:
+        print(f"Error saving transcription: {e}")
+        return jsonify({"error": "Failed to save transcription."}), 500
+    
+    # Generate medical report using OpenAI GPT
+    medical_report = generate_medical_report(transcription)
 
-    chat_prompt = [
-        {
-            "role": "system",
-            "content": "You are a healthcare assistant helping a patient. Ask one follow-up question at a time to gather complete information for a structured medical report. Ensure all responses are clear and formatted."
-        }
-    ]
-    chat_prompt.extend(chat_history)
-    chat_prompt.append({"role": "user", "content": prompt})
+    # Save the medical report to a PDF
+    pdf_path = "uploads/medical_report.pdf"
+    try:
+        if medical_report.strip():
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            pdf.multi_cell(0, 10, txt=medical_report)
+            pdf.output(pdf_path)
+        else:
+            print("Medical report is empty; skipping PDF generation.")
+            return jsonify({"error": "Medical report is empty, unable to generate PDF."}), 500
+    except Exception as e:
+        print(f"Error generating PDF: {e}")
+        return jsonify({"error": "Failed to generate PDF."}), 500
 
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=chat_prompt,
-        max_tokens=150,
-        temperature=0.7
-    )
-    answer = response["choices"][0]["message"]["content"].strip()
+    return jsonify({"message": "Transcription saved and medical report generated.", "pdf_path": pdf_path})
 
-    # Store patient query and AI response in the database
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("INSERT INTO chats (patient_id, message, sender) VALUES (?, ?, ?)", (patient_id, prompt, "patient"))
-    c.execute("INSERT INTO chats (patient_id, message, sender) VALUES (?, ?, ?)", (patient_id, answer, "ai"))
-    conn.commit()
-    conn.close()
 
-    # Update chat history
-    chat_history.append({"role": "user", "content": prompt})
-    chat_history.append({"role": "assistant", "content": answer})
+# Function to generate the medical report using GPT
+def generate_medical_report(transcription):
+    prompt = f"""Given the transcription of a medical conversation, generate a structured medical report under the following headings:
 
-    return jsonify({"response": answer, "chat_history": chat_history})
+    - Diagnosis
+    - Medications and Dosage
+    - Lifestyle Changes
 
-# Function: Generate Report
-def generate_report(patient_id, chat_history):
-    # Generate a structured summary of the chat
-    summary_prompt = [
-        {
-            "role": "system",
-            "content": "You are a helpful assistant that creates a structured and detailed report from a healthcare chat. Include only relevant information, and organize the report with proper headings and bullet points."
-        },
-        {
-            "role": "user",
-            "content": "Summarize the following chat into a professional medical report: " + "\n".join([f"{entry['role']}: {entry['content']}" for entry in chat_history])
-        }
-    ]
+    Transcription:
+    {transcription}
 
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=summary_prompt,
-        max_tokens=500,
-        temperature=0.7
-    )
-    summary = response["choices"][0]["message"]["content"].strip()
+    Formatted Medical Report:"""
 
-    # Generate possible diagnoses with probabilities
-    diagnosis_prompt = [
-        {
-            "role": "system",
-            "content": "You are a medical assistant. Based on the symptoms described in the chat, generate a list of possible diagnoses with their likelihood percentages. Provide the diagnoses in a structured format."
-        },
-        {
-            "role": "user",
-            "content": "Analyze the following symptoms and provide possible diagnoses with percentages: " + "\n".join([f"{entry['role']}: {entry['content']}" for entry in chat_history if entry['role'] == 'user'])
-        }
-    ]
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # Use the chat model
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that formats medical reports."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1000
+        )
+        report = response['choices'][0]['message']['content'].strip()
+        return report
+    except Exception as e:
+        print(f"Error generating report: {e}")
+        return "Unable to generate a medical report due to an error."
 
-    diagnosis_response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=diagnosis_prompt,
-        max_tokens=300,
-        temperature=0.7
-    )
-    diagnosis = diagnosis_response["choices"][0]["message"]["content"].strip()
 
-    # Generate PDF report
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
+@socketio.on("join_room")
+def handle_join_room(data):
+    room = data.get("room")
+    user = data.get("user", "Unknown User")
+    if room:
+        join_room(room)
+        emit("user_joined", {"user": user}, to=room)
 
-    # Add report title
-    pdf.cell(200, 10, txt="Patient Report", ln=True, align="C")
-    pdf.ln(10)
+@socketio.on("save_transcription")
+def handle_save_transcription(data):
+    room = data.get("room")
+    transcription = data.get("transcription")
+    user = data.get("user", "Unknown User")
+    if transcription:
+        message = f"{user}: {transcription}"
+        transcription_path = "uploads/transcriptions.txt"
+        with open(transcription_path, "a") as f:
+            f.write(message + "\n")
+        emit("update_transcription", {"user": user, "transcription": message}, to=room)
 
-    # Add chat summary
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, txt="Summary:", ln=True)
-    pdf.set_font("Arial", size=10)
-    pdf.multi_cell(0, 10, summary)
-    pdf.ln(10)
-
-    # Add possible diagnoses
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, txt="Possible Diagnoses:", ln=True)
-    pdf.set_font("Arial", size=10)
-    pdf.multi_cell(0, 10, diagnosis)
-
-    report_dir = f"reports/patient_{patient_id}"
-    os.makedirs(report_dir, exist_ok=True)
-    report_path = os.path.join(report_dir, f"report_patient_{patient_id}.pdf")
-    pdf.output(report_path)
-
-    return report_path
-
-# Route: Download Report
-@app.route("/download_report/<int:patient_id>", methods=["GET"])
-def download_report(patient_id):
-    report_dir = f"reports/patient_{patient_id}"
-    report_path = os.path.join(report_dir, f"report_patient_{patient_id}.pdf")
-
-    if os.path.exists(report_path):
-        return send_file(report_path, as_attachment=True)
-    return jsonify({"error": "Report not found"}), 404
+@socketio.on("signal")
+def handle_signal(data):
+    emit("signal", data, to=data["room"], skip_sid=request.sid)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
